@@ -7,4 +7,5 @@ location =  geocoder.ipinfo('me') # uses ip adress to find location
 city = location.city
 street = location.street
 
-def find_in_city(hospital):
+def find_in_city(entity,radius,desired_location): # gets the desired entity and how far from the givenlocation it should be
+  
