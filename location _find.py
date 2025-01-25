@@ -4,14 +4,27 @@
 import geocoder
 import requests
 
-
-location =  geocoder.ipinfo('me') # uses ip adress to find location
+location = geocoder.ipinfo('me')
 city = location.city
-street = location.street
 latitude = location.latlng[0]  # Latitude
 longitude = location.latlng[1]  # Longitude
+country = location.country  #country
 
-radius = 5000  # Search radius in meters - default distance
+
+
+# Printing the current location (just for testing/debugging)
+#print(f"Your current location: {city} (Lat: {latitude}, Lon: {longitude}, Country: {country})")
+
+
+try:
+    radius = int(input("how far are you willing to go,in meters (default 5000): ") or 5000)
+except ValueError:
+    print("Invalid input. Defaulting to 5000 meters.")
+    radius = 5000
+
+# where they may desire to go (makes it more specific)
+area_name = input(f"Enter a specific neighborhood or district name (or press Enter to skip): ").strip()
+
 
 type_of_places = [ # list of possible types to chose from
     "Hospitals",
@@ -67,17 +80,26 @@ type_of_places = [ # list of possible types to chose from
     "Local Health Departments",
     "Physical Therapy Centers"
 ]
-length_of_place_list = len(type_of_places)
 
-for i in range(length_of_place_list):
-    i=i+1
-    print("["+str(i)+"] "+type_of_places[i-1]+"\n")
+for i, place in enumerate(type_of_places, 1):
+    print(f"[{i}] {place}")
 
-type_of_place_choie = input("depending on the length chose your place [1- "+str(length_of_place_list)+"]: ") 
+try:
+    type_of_place_choice = int(input(f"Choose your place type [1-{len(type_of_places)}]: "))
+    type_of_place = type_of_places[type_of_place_choice - 1]
+except (ValueError, IndexError):
+    print(f"Invalid choice, defaulting to 'Hospitals'.")
+    type_of_place = "Hospitals"
 
-type_of_place = type_of_places[int(type_of_place_choie)-1]
+# If the user entered an area name, include it in the query to focus on the specific area.
+query = f"{type_of_place}"
+if area_name:
+    query += f"{area_name}"
 
-url = f"https://nominatim.openstreetmap.org/search?format=json&q={type_of_place}&lat={latitude}&lon={longitude}&radius={radius}" #find everything based on info
+
+
+
+url = f"https://nominatim.openstreetmap.org/search?format=json&q={query}&lat={latitude}&lon={longitude}&radius={radius}&countrycodes={country}" #find everything based on info
 
 headers = {
     'User-Agent': 'KR-AID/1.0 (mailto:devubusual@outlook.com)'  # Use your actual app name and contact info
@@ -95,7 +117,7 @@ if response.status_code == 200:
         # Parse the JSON response
         data = response.json()
 
-        # Check if we have any results
+        # If there are results, display them
         if data:
             for place in data:
                 name = place.get('display_name', 'N/A')
@@ -103,12 +125,34 @@ if response.status_code == 200:
                 lon = place.get('lon', 'N/A')
                 address = place.get('address', 'N/A')
 
-                print(f"Name: {name}")
+                print(f"\nName: {name}")
                 print(f"Latitude: {lat}, Longitude: {lon}")
                 print(f"Address: {address}")
-                print("-" * 50)
+                print("-" * 30)
         else:
             print(f"No nearby {type_of_place} found within {radius} meters.")
+            
+            # Fallback: search again without the area filter if no results are found
+            print("\nTrying search without the area filter...")
+            fallback_url = f"https://nominatim.openstreetmap.org/search?format=json&q={type_of_place}&lat={latitude}&lon={longitude}&radius={radius}&countrycodes={country}"
+            fallback_response = requests.get(fallback_url, headers=headers)
+            if fallback_response.status_code == 200:
+                fallback_data = fallback_response.json()
+                if fallback_data:
+                    print("Results found without area filter:")
+                    for place in fallback_data:
+                        name = place.get('display_name', 'N/A')
+                        lat = place.get('lat', 'N/A')
+                        lon = place.get('lon', 'N/A')
+                        address = place.get('address', 'N/A')
+                        print(f"\nName: {name}")
+                        print(f"Latitude: {lat}, Longitude: {lon}")
+                        print(f"Address: {address}")
+                        print("-" * 50)
+                else:
+                    print("No results found even without the area filter.")
+            else:
+                print("Error fetching fallback data.")
     except Exception as e:
         print(f"Error parsing JSON: {e}")
 else:
