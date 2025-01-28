@@ -1,6 +1,6 @@
 # KR-AID
 
-created by rrothang@gmail.com 
+created by unusualdev.outlook.com
 
 main languages : java , python (and possibly other)
 project start date : December 2024
