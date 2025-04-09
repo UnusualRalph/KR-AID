@@ -1,6 +1,6 @@
 # KR-AID
 
-created by unusualdev@outlook.com
+created by ht3rawa6e@mozmail.com
 
 main languages : java , python (and possibly other)
 project start date : December 2024
