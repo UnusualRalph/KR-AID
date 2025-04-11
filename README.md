@@ -55,7 +55,7 @@ KR-AID is currently in the prototyping phase, with an initial implementation in 
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/kr-aid.git
+git clone https://github.com/UnusualRalph/kr-aid.git
 cd kr-aid
 
 # (Optional) Set up virtual environment
